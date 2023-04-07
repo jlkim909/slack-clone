@@ -19,6 +19,8 @@ import {
 } from "firebase/auth";
 import { getDatabase, ref, set } from "firebase/database";
 import md5 from "md5";
+import { useDispatch } from "react-redux";
+import { setUser } from "../store/userReducer";
 
 const IsPasswordValid = (password: string, confirmPassword: string) => {
   if (password.length < 6 || confirmPassword.length < 6) {
@@ -34,6 +36,7 @@ const IsPasswordValid = (password: string, confirmPassword: string) => {
 function Join() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
@@ -76,6 +79,7 @@ function Join() {
         name: user.displayName,
         avatar: user.photoURL,
       });
+      dispatch(setUser(user));
     } catch (e: any) {
       setError(e.message);
       setLoading(false);
