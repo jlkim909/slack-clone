@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Avatar,
@@ -38,59 +38,63 @@ function Join() {
   const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
 
-  const handleSubmit = async (event: any) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const name = data.get("name");
-    const email = data.get("email");
-    const password = data.get("password");
-    const confirmPassword = data.get("confirmPassword");
+  const postUserDate = useCallback(
+    async (name: string, email: string, password: string) => {
+      setLoading(true);
+      try {
+        const { user } = await createUserWithEmailAndPassword(
+          getAuth(),
+          email,
+          password
+        );
+        await updateProfile(user, {
+          displayName: name,
+          photoURL: `https://www.gravatar.com/avatar/${md5(email)}?d=retro`,
+        });
+        await set(ref(getDatabase(), "users/" + user.uid), {
+          name: user.displayName,
+          avatar: user.photoURL,
+        });
+        dispatch(setUser(user));
+      } catch (e: any) {
+        setError(e.message);
+        setLoading(false);
+      }
+    },
+    [dispatch]
+  );
 
-    if (!name || !email || !password || !confirmPassword) {
-      setError("모든 항목을 입력해주세요");
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (event: any) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const name = data.get("name");
+      const email = data.get("email");
+      const password = data.get("password");
+      const confirmPassword = data.get("confirmPassword");
 
-    if (!IsPasswordValid(password as string, confirmPassword as string)) {
-      setError("비밀번호를 확인해주세요");
-      console.log(name, email, password, confirmPassword);
-      return;
-    }
-    postUserDate(name as string, email as string, password as string);
-  };
+      if (!name || !email || !password || !confirmPassword) {
+        setError("모든 항목을 입력해주세요");
+        return;
+      }
 
-  const postUserDate = async (
-    name: string,
-    email: string,
-    password: string
-  ) => {
-    setLoading(true);
-    try {
-      const { user } = await createUserWithEmailAndPassword(
-        getAuth(),
-        email,
-        password
-      );
-      await updateProfile(user, {
-        displayName: name,
-        photoURL: `https://www.gravatar.com/avatar/${md5(email)}?d=retro`,
-      });
-      await set(ref(getDatabase(), "users/" + user.uid), {
-        name: user.displayName,
-        avatar: user.photoURL,
-      });
-      dispatch(setUser(user));
-    } catch (e: any) {
-      setError(e.message);
-      setLoading(false);
-    }
-  };
+      if (!IsPasswordValid(password as string, confirmPassword as string)) {
+        setError("비밀번호를 확인해주세요");
+        console.log(name, email, password, confirmPassword);
+        return;
+      }
+      postUserDate(name as string, email as string, password as string);
+    },
+    [postUserDate]
+  );
+
   useEffect(() => {
     if (!error) return;
     setTimeout(() => {
       setError("");
     }, 3000);
   });
+
   return (
     <Container component="main" maxWidth="xs">
       <Box

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Avatar,
@@ -17,20 +17,8 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 function Login() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const email = data.get("email");
-    const password = data.get("password");
 
-    if (!email || !password) {
-      setError("모든 항목을 입력해주세요.");
-      return;
-    }
-    loginUser(email, password);
-  };
-
-  const loginUser = async (email: any, password: any) => {
+  const loginUser = useCallback(async (email: any, password: any) => {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(getAuth(), email, password);
@@ -38,7 +26,23 @@ function Login() {
       setError(e.message);
       setLoading(false);
     }
-  };
+  }, []);
+
+  const handleSubmit = useCallback(
+    (event: any) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const email = data.get("email");
+      const password = data.get("password");
+
+      if (!email || !password) {
+        setError("모든 항목을 입력해주세요.");
+        return;
+      }
+      loginUser(email, password);
+    },
+    [loginUser]
+  );
 
   useEffect(() => {
     if (!error) return;
