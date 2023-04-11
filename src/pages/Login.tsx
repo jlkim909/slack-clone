@@ -49,7 +49,7 @@ function Login() {
     setTimeout(() => {
       setError("");
     }, 3000);
-  });
+  }, [error]);
 
   return (
     <Container component="main" maxWidth="xs">
