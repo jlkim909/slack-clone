@@ -15,6 +15,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <Provider store={legacy_createStore(rootReducer, composeWithDevTools())}>
+      {/* BrowserRouter : History API를 사용해 URL과 UI를 동기화하는 라우터 */}
       <BrowserRouter>
         <App />
       </BrowserRouter>

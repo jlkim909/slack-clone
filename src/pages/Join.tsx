@@ -33,24 +33,33 @@ const IsPasswordValid = (password: string, confirmPassword: string) => {
   }
 };
 
+//회원가입 페이지
 function Join() {
+  //error 문구를 표시하기 위함
   const [error, setError] = useState<string>("");
+  //Auth 정보를 송수신 하는 과정 동안 loading
   const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
 
+  //유저 정보 등록 FormData 사용
   const postUserDate = useCallback(
     async (name: string, email: string, password: string) => {
       setLoading(true);
       try {
+        //createUserWithEmailAndPassword : promise 함수 await 사용해야한다.
+        //: 지정된 이메일 주소 및 비밀번호와 연결된 새 사용자 계정을 생성한다.
+        //: 계정이 생서되면 자동 로그인
         const { user } = await createUserWithEmailAndPassword(
           getAuth(),
           email,
           password
         );
+        // updateProfile : 유저의 프로필 정보를 업데이트 한다.
         await updateProfile(user, {
           displayName: name,
           photoURL: `https://www.gravatar.com/avatar/${md5(email)}?d=retro`,
         });
+        //firebase database에 user정보(name, avatar)를 등록
         await set(ref(getDatabase(), "users/" + user.uid), {
           name: user.displayName,
           avatar: user.photoURL,
