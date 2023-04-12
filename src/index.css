@@ -1,5 +1,6 @@
 /* Reset body */
 :where(body) {
+  min-height:100vh;
   margin: 0;
   overflow-wrap: break-word;
 }
